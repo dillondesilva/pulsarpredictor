@@ -61,7 +61,7 @@ print(test_y[:5])
 # Creating discrete hyperparameter amounts to trial
 print("\n--- BEGINNING MODEL IMPROVEMENTS ---")
 max_leaf_nodes = [10, 100, 1000, 10000]
-min_samples_leaf = [10, 100, 1000, 10000]
+min_samples_leaf = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
 
 print("\n--- ADJUSTING MAX LEAF NODES ---")
 for max_leaf_node in max_leaf_nodes:
@@ -70,3 +70,22 @@ for max_leaf_node in max_leaf_nodes:
   preds = model.predict(test_X)
   print("\nMax Leaf Nodes:", max_leaf_node)
   print("R2 Score:", r2_score(preds, test_y))
+
+max_leaf_nodes = 100
+
+print("\n--- ADJUSTING MIN SAMPLES PER LEAF ---")
+
+# best_min_samples_leaf is an array with two values
+# 1) Optimal amount of Minimum Samples a leaf
+# 2) R2 score of the optimal amount
+best_min_samples_leaf_data = [0, 0]
+for min_samples_leaf in min_samples_leaf:
+  model = RandomForestRegressor(min_samples_leaf=min_samples_leaf)
+  model.fit(train_X, train_y)
+  preds = model.predict(test_X)
+  score = r2_score(preds, test_y)
+  print("\nMin Samples Per Leaf:", min_samples_leaf)
+  print("R2 Score:", score)
+  if score > best_min_samples_leaf_data[1]:
+    best_min_samples_leaf_data = [min_samples_leaf, score]
+
