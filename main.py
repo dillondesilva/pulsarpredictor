@@ -8,6 +8,7 @@
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import mean_absolute_error
+from sklearn.metrics import r2_score
 import pandas as pd 
 import numpy as np 
 
@@ -47,7 +48,10 @@ rf_model.fit(train_X, train_y)
 test_pred = rf_model.predict(test_X)
 
 mae = mean_absolute_error(test_pred, test_y)
-print("Mean Absolute Error:", mae)
+r2 = r2_score(test_pred, test_y)
+
+print("\n", "Mean Absolute Error:", mae)
+print("\n", "R2 Score:", r2)
 
 # Outputting first couple of rows
 print(test_pred[:5])
