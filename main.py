@@ -56,3 +56,17 @@ print("\n", "R2 Score:", r2)
 # Outputting first couple of rows
 print(test_pred[:5])
 print(test_y[:5])
+
+# Model Improvement
+# Creating discrete hyperparameter amounts to trial
+print("\n--- BEGINNING MODEL IMPROVEMENTS ---")
+max_leaf_nodes = [10, 100, 1000, 10000]
+min_samples_leaf = [10, 100, 1000, 10000]
+
+print("\n--- ADJUSTING MAX LEAF NODES ---")
+for max_leaf_node in max_leaf_nodes:
+  model = RandomForestRegressor(max_leaf_nodes=max_leaf_node)
+  model.fit(train_X, train_y)
+  preds = model.predict(test_X)
+  print("\nMax Leaf Nodes:", max_leaf_node)
+  print("R2 Score:", r2_score(preds, test_y))
