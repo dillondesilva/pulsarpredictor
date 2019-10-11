@@ -44,16 +44,56 @@ train_X, test_X, train_y, test_y = train_test_split(X, y, random_state=1)
 
 def build_all_models():
   build_random_forest_regressor_model()
+  build_k_nearest_neighbours_model()
 
 def build_specified_model(model):
   if model == "rf":
     build_random_forest_regressor_model()
+  elif model == "knn":
+    build_k_nearest_neighbours_model()
 
-# def build_k_nearest_neighbours_model():
-#   # Develop model here
+def build_k_nearest_neighbours_model():
+  print("\n--- CREATING K NEAREST NEIGHBOURS REGRESSOR MODEL ---") 
+  # Creating a K Nearest Neighbours Regressor Model
+  knn_model = KNeighborsRegressor()
+  knn_model.fit(train_X, train_y)
+
+  # Model Validation
+  test_pred = knn_model.predict(test_X)
+
+  mae = mean_absolute_error(test_pred, test_y)
+  r2 = r2_score(test_pred, test_y)
+
+  print("\n" + "Mean Absolute Error:", mae)
+  print("R2 Score:", r2) 
+
+  # Outputting first couple of rows
+  print(test_pred[:5])
+  print(test_y[:5])
+
+  # Model Improvement
+  # Creating discrete hyperparameter amounts to trial
+  print("\n--- BEGINNING MODEL IMPROVEMENTS ---")
+  n_neighbors = [1, 2, 3, 5, 10, 15, 50, 100, 1000]
+
+  print("\n--- ADJUSTING N NEIGHBOURS ---")
+
+  best_n_neighbors_data = [0, 0]
+  for n_neighbor in n_neighbors:
+    knn_model = KNeighborsRegressor(n_neighbors=n_neighbor)
+    knn_model.fit(train_X, train_y)
+    preds = knn_model.predict(test_X)
+    score = r2_score(preds, test_y)
+    print("\nN Neighbors:", n_neighbor)
+    print("R2 Score:", score)
+    if score > best_n_neighbors_data[1]:
+      best_n_neighbors_data = [n_neighbor, score]
+
+  best_n_neighbors = best_n_neighbors_data[0]
+  print ("\nOptimal amount of n neighbours:", best_n_neighbors)
 
 def build_random_forest_regressor_model():
-  print("\n--- CREATING RANDOM FOREST REGRESSOR MODEL") 
+  print("\n--- CREATING RANDOM FOREST REGRESSOR MODEL ---") 
   # Creating a Random Forest Regressor Model
   rf_model = RandomForestRegressor(random_state=1)
   rf_model.fit(train_X, train_y)
