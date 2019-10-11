@@ -75,6 +75,7 @@ def build_k_nearest_neighbours_model():
   # Creating discrete hyperparameter amounts to trial
   print("\n--- BEGINNING MODEL IMPROVEMENTS ---")
   n_neighbors = [1, 2, 3, 5, 10, 15, 50, 100, 1000]
+  leaf_sizes = [2, 5, 10, 30, 50, 100]
 
   print("\n--- ADJUSTING N NEIGHBOURS ---")
 
@@ -91,6 +92,23 @@ def build_k_nearest_neighbours_model():
 
   best_n_neighbors = best_n_neighbors_data[0]
   print ("\nOptimal amount of n neighbours:", best_n_neighbors)
+
+  print("\n--- ADJUSTING LEAF SIZE ---")
+
+  best_leaf_size_data = [0, 0]
+  for leaf_size in leaf_sizes:
+    knn_model = KNeighborsRegressor(leaf_size=leaf_size)
+    knn_model.fit(train_X, train_y)
+    preds = knn_model.predict(test_X)
+    score = r2_score(preds, test_y)
+    print("\nLeaf size:", leaf_size)
+    print("R2 Score:", score)
+    if score > best_leaf_size_data[1]:
+      best_leaf_size_data = [leaf_size, score]
+
+  best_leaf_size = best_leaf_size_data[0]
+  print ("\nOptimal leaf size:", best_leaf_size)
+
 
 def build_random_forest_regressor_model():
   print("\n--- CREATING RANDOM FOREST REGRESSOR MODEL ---") 
