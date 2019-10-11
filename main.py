@@ -63,6 +63,7 @@ print("\n--- BEGINNING MODEL IMPROVEMENTS ---")
 
 max_leaf_nodes = [10, 100, 1000, 10000]
 min_samples_leaf = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+n_estimators = [10, 100, 1000]
 
 print("\n--- ADJUSTING MAX LEAF NODES ---")
 
@@ -99,7 +100,23 @@ for min_samples_leaf in min_samples_leaf:
 best_min_samples_leaf = best_min_samples_leaf_data[0] 
 print("\nOptimal amount of minimum samples a leaf:", best_min_samples_leaf)
 
-model = RandomForestRegressor(min_samples_leaf=best_min_samples_leaf, max_leaf_nodes=best_max_leaf_nodes, random_state=1)
+print("--- ADJUSTING N ESTIMATORS ---")
+
+best_n_est_data = [0, 0]
+for n_estimator in n_estimators:
+  model = RandomForestRegressor(n_estimators=n_estimator, random_state=1)
+  model.fit(train_X, train_y)
+  preds = model.predict(test_X)
+  score = r2_score(preds, test_y)
+  print("\nN Estimator:", n_estimator)
+  print("R2 Score:", score)
+  if score > best_min_samples_leaf_data[1]:
+    best_n_est_data = [n_estimator, score]
+
+best_n_estimator = best_n_est_data[0] 
+print("\nOptimal N Estimator:", best_n_estimator)
+
+model = RandomForestRegressor(max_leaf_nodes=best_max_leaf_nodes, n_estimators=best_n_estimator, random_state=1)
 model.fit(train_X, train_y)
 preds = model.predict(test_X)
 score = r2_score(preds, test_y)
