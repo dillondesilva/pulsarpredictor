@@ -10,6 +10,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.metrics import mean_absolute_error
 from sklearn.metrics import r2_score
 from sklearn.neighbors import KNeighborsRegressor
+from sklearn.neural_network import MLPRegressor
 import pandas as pd 
 import numpy as np 
 import sys
@@ -51,6 +52,24 @@ def build_specified_model(model):
     build_random_forest_regressor_model()
   elif model == "knn":
     build_k_nearest_neighbours_model()
+  elif model == "nn":
+    build_neural_network_model()
+
+
+def build_neural_network_model():
+  print("\n--- CREATING NEURAL NETWORK MODEL ---") 
+  # Creating a Neural Network MLP Regressor Model
+  mlp_model = MLPRegressor()
+  mlp_model.fit(train_X, train_y)
+
+  # Model Validation
+  test_pred = mlp_model.predict(test_X)
+
+  mae = mean_absolute_error(test_pred, test_y)
+  r2 = r2_score(test_pred, test_y)
+
+  print("\n" + "Mean Absolute Error:", mae)
+  print("R2 Score:", r2) 
 
 def build_k_nearest_neighbours_model():
   print("\n--- CREATING K NEAREST NEIGHBOURS REGRESSOR MODEL ---") 
@@ -76,6 +95,7 @@ def build_k_nearest_neighbours_model():
   print("\n--- BEGINNING MODEL IMPROVEMENTS ---")
   n_neighbors = [1, 2, 3, 5, 10, 15, 50, 100, 1000]
   leaf_sizes = [2, 5, 10, 30, 50, 100]
+  algorithms = ["auto", "ball_tree", "kd_tree", "brute"]
 
   print("\n--- ADJUSTING N NEIGHBOURS ---")
 
@@ -109,6 +129,28 @@ def build_k_nearest_neighbours_model():
   best_leaf_size = best_leaf_size_data[0]
   print ("\nOptimal leaf size:", best_leaf_size)
 
+  print("\n--- FINDING OPTIMAL ALGORITHM ---")
+
+  best_algorithm_data = ["", 0]
+  for algorithm in algorithms:
+    knn_model = KNeighborsRegressor(algorithm=algorithm)
+    knn_model.fit(train_X, train_y)
+    preds = knn_model.predict(test_X)
+    score = r2_score(preds, test_y)
+    print("\nAlgorithm:", algorithm)
+    print("R2 Score:", score)
+    if score > best_algorithm_data[1]:
+      best_algorithm_data = [algorithm, score]
+
+  best_algorithm = best_algorithm_data[0]
+  print ("\nOptimal algorithm:", best_algorithm)
+
+  print("---CREATING FINAL MODEL ---")
+  model = KNeighborsRegressor(n_neighbors=best_n_neighbors, leaf_size=best_leaf_size, algorithm=best_algorithm)
+  model.fit(train_X, train_y)
+  preds = model.predict(test_X)
+  score = r2_score(preds, test_y)
+  print("R2 Score:", score)
 
 def build_random_forest_regressor_model():
   print("\n--- CREATING RANDOM FOREST REGRESSOR MODEL ---") 
@@ -218,7 +260,7 @@ INVALID_MODEL_ERR_MSG = "Invalid model build type specified. Valid model build t
 # Obtaining model type build specification
 # from passed parameter
 
-allowed_models = ["rf", "knn"]
+allowed_models = ["rf", "knn", "nn"]
 num_of_args = len(sys.argv)
 
 if num_of_args == 1:
