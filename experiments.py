@@ -78,23 +78,75 @@ def build_neural_network_model():
   # Model Improvement
   # Creating discrete hyperparameter amounts to trial
   print("\n--- BEGINNING MODEL IMPROVEMENTS ---")
-  solvers = ["adam", "lbfgs", "sgd"]
+  solvers = ["adam", "lbfgs"]
+  max_iter_nums = [200, 500, 1000, 10000]
+  cand_hidden_layer_sizes = [50, 100, 500, 1000]
+  activation_algorithms = ["identity", "logistic", "tanh", "relu"]
+  learning_rate_inits = [0.00001, 0.0001, 0.001, 0.0015, 0.002, 0.005, 0.01, 0.1, 1]
+  learning_rates = ["constant", "invscaling", "adaptive"]
+  
+  print("\n--- ADJUSTING LEARNING RATE ---")
 
-  print("\n--- ADJUSTING SOLVER ---")
+  best_learning_rate_data = ["", 0, 0]
+  for learning_rate in learning_rates:
+    for learning_rate_init in learning_rate_inits:
+      mlp_model = MLPRegressor(learning_rate=learning_rate, learning_rate_init=learning_rate_init, random_state=1)
+      mlp_model.fit(train_X, train_y)
+      preds = np.round(abs(mlp_model.predict(test_X)))
+      score = r2_score(preds, test_y)
+      print("\nLearning Rate:", learning_rate)
+      print("Initial Learning Rate:", learning_rate_init)
+      print("R2 Score:", score)
+      if score > best_learning_rate_data[2]:
+        best_learning_rate_data = [learning_rate, learning_rate_init, score]
 
-  best_solver_data = ["", 0]
-  for solver in solvers:
-    mlp_model = MLPRegressor(solver=solver, random_state=1)
+  best_learning_rate = best_learning_rate_data[0]
+  best_learning_rate_init = best_learning_rate_data[1]
+  print("\nOptimal learning rate:", best_learning_rate)
+  print("Optimal initial learning rate:", best_learning_rate_init) 
+
+  print("\n--- ADJUSTING ACTIVATION ALGORITHM ---")
+
+  best_activation_algorithm_data = ["", 0]
+  for activation_algorithm in activation_algorithms:
+    mlp_model = MLPRegressor(activation=activation_algorithm, random_state=1)
     mlp_model.fit(train_X, train_y)
     preds = np.round(abs(mlp_model.predict(test_X)))
     score = r2_score(preds, test_y)
-    print("\nSolver:", solver)
+    print("\nActivation Algorithm:", activation_algorithm)
     print("R2 Score:", score)
-    if score > best_solver_data[1]:
-      best_solver_data = [solver, score]
+    if score > best_activation_algorithm_data[1]:
+      best_activation_algorithm_data = [activation_algorithm, score]
+
+  best_activation_algorithm = best_activation_algorithm_data[0]
+  print("\nOptimal activation algorithm:", best_activation_algorithm)
+
+  print("\n--- ADJUSTING MAXIMUM ITERATIONS WITH VARYING SOLVERS ---")
+
+  best_solver_data = [0, 0, 0]
+  for solver in solvers:
+    for max_iter_num in max_iter_nums:
+      mlp_model = MLPRegressor(solver=solver, max_iter=max_iter_num, random_state=1)
+      mlp_model.fit(train_X, train_y)
+      preds = np.round(abs(mlp_model.predict(test_X)))
+      score = r2_score(preds, test_y)
+      print("\nSolver:", solver)
+      print("Max Iterations:", max_iter_num)
+      print("R2 Score:", score)
+      if score > best_solver_data[2]:
+        best_solver_data = [solver, max_iter_num, score]
 
   best_solver = best_solver_data[0]
-  print("\nOptimal solver:", best_solver)
+  best_max_iter = best_solver_data[1]
+  print("\nOptimal amount of maximum iterations:", best_max_iter)
+  print("Solver:", best_solver)
+
+  print("--- CREATING FINAL MODEL ---")
+  model = MLPRegressor(activation=best_activation_algorithm, max_iter=best_max_iter, solver=best_solver, learning_rate=best_learning_rate, learning_rate_init=best_learning_rate_init)
+  model.fit(train_X, train_y)
+  preds = model.predict(test_X)
+  score = r2_score(preds, test_y)
+  print("R2 Score:", score)
 
 def build_k_nearest_neighbours_model():
   print("\n--- CREATING K NEAREST NEIGHBOURS REGRESSOR MODEL ---") 
