@@ -59,17 +59,42 @@ def build_specified_model(model):
 def build_neural_network_model():
   print("\n--- CREATING NEURAL NETWORK MODEL ---") 
   # Creating a Neural Network MLP Regressor Model
-  mlp_model = MLPRegressor()
+  mlp_model = MLPRegressor(random_state=1)
   mlp_model.fit(train_X, train_y)
 
   # Model Validation
-  test_pred = mlp_model.predict(test_X)
+  test_pred = np.round(abs(mlp_model.predict(test_X)))
 
   mae = mean_absolute_error(test_pred, test_y)
   r2 = r2_score(test_pred, test_y)
 
   print("\n" + "Mean Absolute Error:", mae)
   print("R2 Score:", r2) 
+
+  # Outputting first couple of rows
+  print(test_pred[:5])
+  print(test_y[:5])
+
+  # Model Improvement
+  # Creating discrete hyperparameter amounts to trial
+  print("\n--- BEGINNING MODEL IMPROVEMENTS ---")
+  solvers = ["adam", "lbfgs", "sgd"]
+
+  print("\n--- ADJUSTING SOLVER ---")
+
+  best_solver_data = ["", 0]
+  for solver in solvers:
+    mlp_model = MLPRegressor(solver=solver, random_state=1)
+    mlp_model.fit(train_X, train_y)
+    preds = np.round(abs(mlp_model.predict(test_X)))
+    score = r2_score(preds, test_y)
+    print("\nSolver:", solver)
+    print("R2 Score:", score)
+    if score > best_solver_data[1]:
+      best_solver_data = [solver, score]
+
+  best_solver = best_solver_data[0]
+  print("\nOptimal solver:", best_solver)
 
 def build_k_nearest_neighbours_model():
   print("\n--- CREATING K NEAREST NEIGHBOURS REGRESSOR MODEL ---") 
