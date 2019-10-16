@@ -79,12 +79,28 @@ def build_neural_network_model():
   # Creating discrete hyperparameter amounts to trial
   print("\n--- BEGINNING MODEL IMPROVEMENTS ---")
   solvers = ["adam", "lbfgs"]
-  max_iter_nums = [200, 500, 1000, 10000]
-  cand_hidden_layer_sizes = [50, 100, 500, 1000]
+  max_iter_nums = [200, 500, 1000, 5000]
+  cand_hidden_layer_sizes = [5, 10, 50, 100, 500, 1000]
   activation_algorithms = ["identity", "logistic", "tanh", "relu"]
-  learning_rate_inits = [0.00001, 0.0001, 0.001, 0.0015, 0.002, 0.005, 0.01, 0.1, 1]
+  learning_rate_inits = [0.0001, 0.001, 0.0015, 0.002, 0.005, 0.01, 0.1]
   learning_rates = ["constant", "invscaling", "adaptive"]
-  
+
+  print("\n--- ADJUSTING HIDDEN LAYER SIZES ---")
+
+  best_hidden_layer_sizes_data = [0, 0]
+  for hidden_layer_size in cand_hidden_layer_sizes:
+    mlp_model = MLPRegressor(hidden_layer_sizes=hidden_layer_size, random_state=1)
+    mlp_model.fit(train_X, train_y)
+    preds = np.round(abs(mlp_model.predict(test_X)))
+    score = r2_score(preds, test_y)  
+    print("\nHidden Layer Sizes:", hidden_layer_size)
+    print("R2 Score:", score)
+    if score > best_hidden_layer_sizes_data[1]:
+      best_hidden_layer_sizes_data = [hidden_layer_size, score]
+
+  best_hidden_layer_size = best_hidden_layer_sizes_data[0]
+  print("Optimal hidden layer size:", best_hidden_layer_size)
+
   print("\n--- ADJUSTING LEARNING RATE ---")
 
   best_learning_rate_data = ["", 0, 0]
@@ -142,7 +158,7 @@ def build_neural_network_model():
   print("Solver:", best_solver)
 
   print("--- CREATING FINAL MODEL ---")
-  model = MLPRegressor(activation=best_activation_algorithm, max_iter=best_max_iter, solver=best_solver, learning_rate=best_learning_rate, learning_rate_init=best_learning_rate_init)
+  model = MLPRegressor(activation=best_activation_algorithm, max_iter=best_max_iter, solver=best_solver, learning_rate=best_learning_rate, learning_rate_init=best_learning_rate_init, hidden_layer_sizes=best_hidden_layer_size)
   model.fit(train_X, train_y)
   preds = model.predict(test_X)
   score = r2_score(preds, test_y)
@@ -332,7 +348,7 @@ def build_random_forest_regressor_model():
   print("\nMin Samples Per Leaf:", min_samples_leaf)
   print("R2 Score:", score)
 
-NO_MODEL_ERR_MSG = "No model build type specified. Model build type must be specified when running program in the syntax, '--model=$(MODEL_TYPE)'."
+NO_MODEL_ERR_MSG = "No model build type specified. Model build type must be specified when running program in the syntax, '-model=$(MODEL_TYPE)'."
 INVALID_MODEL_ERR_MSG = "Invalid model build type specified. Valid model build types include:\n['rf', 'knn']"
 # Obtaining model type build specification
 # from passed parameter
